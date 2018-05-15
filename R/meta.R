@@ -24,7 +24,7 @@ get_song_meta <- function(song_id, access_token=genius_token()) {
   res <- httr::content(req)
 
   # pull song meta without request meta
-    song_meta <- res$response$song
+  song_meta <- res$response$song
 
   # grab album, artist, stat data
   alb <- song_meta$album
@@ -40,7 +40,8 @@ get_song_meta <- function(song_id, access_token=genius_token()) {
         stat$pageviews,
         song_meta$annotation_count,
         art$id,
-        art$name, art$url,
+        art$name,
+        art$url,
         alb$id,
         alb$name,
         alb$url)
@@ -83,23 +84,27 @@ get_artist_meta <- function(artist_id, access_token=genius_token()) {
   res <- httr::content(req)
 
   # drill down
-  res <- res$response
+  res <- res$response$artist
 
   # extract artist info from returned results
-  artist_info <- purrr::map_df(1:length(res), function(x) {
-    tmp <- res[[x]]
-    list(
-      artist_id = tmp$id,
-      artist_name = tmp$name,
-      artist_url = tmp$url,
-      artist_image_url = tmp$image_url,
-      followers_count = tmp$followers_count
+  artist_info <- list(
+      res$id,
+      res$name,
+      res$url,
+      res$image_url,
+      res$followers_count
+  )
 
-    )
-  })
+  ## find list indices of NULL values, change to NA
+  ndxNULL <- which(unlist(lapply(artist_info, is.null)))
+  for(i in ndxNULL){ artist_info[[i]] <- NA }
+
+  ## name artist_info list
+  names(artist_info) <- c('artist_id', 'artist_name', 'artist_url', 'artist_image_url',
+      'followers_count')
 
   # isolate unique pairs
-  return(tibble::as_tibble(unique(artist_info)))
+  return(tibble::as_tibble(artist_info))
 
 }
 
@@ -132,26 +137,31 @@ get_album_meta <- function(album_id, access_token=genius_token()) {
   res <- httr::content(req)
 
   # drill down
-  res <- res$response
+  res <- res$response$album
+  art <- res$artist
 
   # extract album info from returned results
-  album_info <- purrr::map_df(1:length(res), function(x) {
-    tmp <- res[[x]]
-    art <- res[[x]]$artist
-    list(
-      album_id = tmp$id,
-      album_name = tmp$name,
-      album_url = tmp$url,
-      album_cover_art_url = tmp$cover_art_url,
-      album_release_date = tmp$release_date,
-      pageviews = tmp$song_pageviews,
-      artist_id = art$id,
-      artist_name = art$name,
-      artist_url = art$url
-    )
-  })
+  album_info <- list(
+      res$id,
+      res$name,
+      res$url,
+      res$cover_art_url,
+      res$release_date,
+      res$song_pageviews,
+      art$id,
+      art$name,
+      art$url
+  )
+
+  ## find list indices of NULL values, change to NA
+  ndxNULL <- which(unlist(lapply(album_info, is.null)))
+  for(i in ndxNULL){ album_info[[i]] <- NA }
+
+  ## name album_info list
+  names(album_info) <- c('album_id', 'album_name', 'album_url', 'album_cover_art_url',
+      'album_release_date', 'pageviews', 'artist_id', 'artist_name', 'artist_url')
 
   # isolate unique pairs
-  return(tibble::as_tibble(unique(album_info)))
+  return(tibble::as_tibble(album_info))
 
 }
