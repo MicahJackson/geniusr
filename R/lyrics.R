@@ -210,7 +210,7 @@ scrape_lyrics_tracklist <- function(tracklist){
 #' scrape_lyrics_album(album_id = 337082)
 #' }
 #' @export
-scrape_lyrics_album <- function(album_id){
+scrape_lyrics_album <- function(album_id, access_token = genius_token()){
 
     ## tracklist is from `scrape_tracklist` function.
     ## tibble with the following features (in order):
@@ -218,7 +218,7 @@ scrape_lyrics_album <- function(album_id){
     ## album_name, album_id, artist_id, artist_name, artist_url
 
     ## get full tracklist info
-    tracks <- scrape_tracklist(album_id)
+    tracks <- scrape_tracklist(album_id, access_token)
 
     ## pull off album and artist info
     album_plus_artist_info <- tracks %>%
@@ -244,3 +244,28 @@ scrape_lyrics_album <- function(album_id){
     return(full)
 
 }
+
+
+#' Retrieve lyrics associated with a tibble Genius Album IDs
+#'
+#' Scrape lyrics from Genius' albums using their associated IDs.
+#' @param album_ids A tibble or vector of album IDs (\code{album_id} returned in \code{\link{get_song_meta}})
+#' @param access_token Genius' client access token, defaults to \code{genius_token}
+#' @importFrom purrr "%>%" map_df
+#' @examples
+#' \dontrun{
+#' scrape_lyrics_discography(album_ids = tibble(album_337082)
+#' }
+#' @export
+scrape_lyrics_discography <- function(album_ids, access_token = genius_token()){
+
+    ## album ids should be tibble or vector of album_ids
+
+    # unlist in case of tibble/list
+    ids <- unlist(album_ids)
+
+    # walk along ids and scrape lyrics from each id
+    purrr::map_df(ids, scrape_lyrics_album, access_token)
+
+}
+

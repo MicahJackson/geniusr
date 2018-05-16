@@ -32,7 +32,7 @@ get_song_meta <- function(song_id, access_token=genius_token()) {
   stat <- song_meta$stats
 
   # make list for song_info
-  song_info <- list(song_meta$id,
+  song_info <- tibble::lst(song_meta$id,
         song_meta$title_with_featured,
         song_meta$url,
         song_meta$song_art_image_url,
@@ -48,7 +48,7 @@ get_song_meta <- function(song_id, access_token=genius_token()) {
 
   # find list indices of NULL values, change to NA
   ndxNULL <- which(unlist(lapply(song_info, is.null)))
-  for(i in ndxNULL){ song_info[[i]] <- NA }
+  song_info[names(ndxNULL)] <- NA
 
   # name song_info list
   names(song_info) <- c('song_id', 'song_name', 'song_lyrics_url', 'song_art_image_url', 'release_date',
@@ -87,7 +87,7 @@ get_artist_meta <- function(artist_id, access_token=genius_token()) {
   res <- res$response$artist
 
   # extract artist info from returned results
-  artist_info <- list(
+  artist_info <- tibble::lst(
       res$id,
       res$name,
       res$url,
@@ -97,7 +97,7 @@ get_artist_meta <- function(artist_id, access_token=genius_token()) {
 
   ## find list indices of NULL values, change to NA
   ndxNULL <- which(unlist(lapply(artist_info, is.null)))
-  for(i in ndxNULL){ artist_info[[i]] <- NA }
+  artist_info[names(ndxNULL)] <- NA
 
   ## name artist_info list
   names(artist_info) <- c('artist_id', 'artist_name', 'artist_url', 'artist_image_url',
@@ -141,7 +141,7 @@ get_album_meta <- function(album_id, access_token=genius_token()) {
   art <- res$artist
 
   # extract album info from returned results
-  album_info <- list(
+  album_info <- tibble::lst(
       res$id,
       res$name,
       res$url,
@@ -155,7 +155,7 @@ get_album_meta <- function(album_id, access_token=genius_token()) {
 
   ## find list indices of NULL values, change to NA
   ndxNULL <- which(unlist(lapply(album_info, is.null)))
-  for(i in ndxNULL){ album_info[[i]] <- NA }
+  album_info[names(ndxNULL)] <- NA
 
   ## name album_info list
   names(album_info) <- c('album_id', 'album_name', 'album_url', 'album_cover_art_url',
